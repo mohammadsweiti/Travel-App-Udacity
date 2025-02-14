@@ -1,0 +1,20 @@
+
+const GEONAMES_URL = "https://secure.geonames.org/searchJSON?q=london&maxRows=1&username=";
+const GEO_USERNAME = "menoo20";
+
+
+const encodedLocation = encodeURIComponent(localStorage.getItem("location"));
+
+const WEATHERBIT_FORECAST_URL = `https://api.weatherbit.io/v2.0/forecast/daily?lat=${latitude}&lon=${longitude}&units=M&days=${forecastDays}&key=${weatherApiKey}`;
+const WEATHERBIT_CURRENT_URL = `https://api.weatherbit.io/v2.0/current?lat=${latitude}&lon=${longitude}&units=M&key=${weatherApiKey}`;
+
+const PIXABAY_IMAGE_URL = `https://pixabay.com/api/?key=${pixabayApiKey}&q=${encodedLocation}&image_type=photo`;
+
+let highResolutionImageURL;
+
+async function fetchCityImage() {
+    const pixabayKey = process.env.PIXABAY_API_KEY;
+    const locationQuery = encodeURIComponent(localStorage.getItem("location"));
+
+    const pixabayURL = `https://pixabay.com/api/?key=${pixabayKey}&q=${locationQuery}&image_type=photo`;    
+}
