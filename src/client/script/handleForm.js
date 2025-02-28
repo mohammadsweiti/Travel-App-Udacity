@@ -3,7 +3,7 @@ import axios from "axios";
 const travelForm = document.querySelector("form");
 const destinationInput = document.getElementById("city");
 const departureDateInput = document.getElementById("flightDate");
-
+const SERVER_BASE = window.location.origin;
 const destinationError = document.getElementById("city_error");
 const dateValidationError = document.getElementById("date_error");
 
@@ -52,7 +52,6 @@ const handleFormSubmission = async (event) => {
   }
 };
 
-
 const validateFormInputs = () => {
   hideErrors();
 
@@ -88,33 +87,33 @@ const fetchCityLocation = async () => {
   const city = destinationInput.value;
   if (city) {
     try {
-      const response = await axios.post("http://localhost:8000/getCity", travelForm, {
+      const response = await axios.post(`${SERVER_BASE}/getCity`, { city }, {
         headers: {
           "Content-Type": "application/json",
         },
       });
       return response.data;
     } catch (error) {
-        console.error("Error fetching city location:", error);
-        return { error: true, message: "Error fetching city location."};
+      console.error("Error fetching city location:", error);
+      return { error: true, message: "Error fetching city location." };
     }
   } else {
     displayError(destinationError, "Destination cannot be empty");
-    return { error: true }; 
+    return { error: true };
   }
 };
 
 const retrieveWeatherInfo = async (lng, lat, remainingDays) => {
   try {
-    const response = await axios.post("http://localhost:8000/getWeather", {
+    const response = await axios.post(`${SERVER_BASE}/getWeather`, {
       lng,
       lat,
       remainingDays,
     });
     return response.data;
   } catch (error) {
-      console.error("Error fetching weather data:", error);
-      return {error: true, message: "Error fetching weather data."}; 
+    console.error("Error fetching weather data:", error);
+    return { error: true, message: "Error fetching weather data." };
   }
 };
 
@@ -126,17 +125,16 @@ const calculateDaysRemaining = (date) => {
   return dayDifference;
 };
 
-
 const fetchCityImage = async (cityName) => {
   try {
-    const response = await axios.post("http://localhost:8000/getCityPic", {
+    const response = await axios.post(`${SERVER_BASE}/getCityPic`, {
       city_name: cityName,
     });
     const { image } = response.data;
     return image;
   } catch (error) {
     console.error("Error fetching city image:", error);
-    return null; 
+    return null;
   }
 };
 
@@ -151,20 +149,20 @@ const updateTravelDetails = (daysRemaining, city, image, weather) => {
   document.querySelector(".temp").textContent =
     daysRemaining > 7
       ? `Forecasted temperature: ${weather.temp}&degC`
-      : `Current temperature: ${weather.temp} &deg C`;
+      : `Current temperature: ${weather.temp} &degC`;
 
   document.querySelector(".max-temp").textContent = daysRemaining > 7 ? `Max Temp: ${weather.app_max_temp}&degC` : "";
   document.querySelector(".min-temp").textContent = daysRemaining > 7 ? `Min Temp: ${weather.app_min_temp}&degC` : "";
 
-    if (image) {
-        document.querySelector(".cityPic").innerHTML = `<img src="${image}" alt="Image of ${city}">`;
-    } else {
-        document.querySelector(".cityPic").innerHTML = "<p>Could not retrieve image.</p>"; 
-    }
-
-
-
+  if (image) {
+    document.querySelector(".cityPic").innerHTML = `<img src="${image}" alt="Image of ${city}">`;
+  } else {
+    document.querySelector(".cityPic").innerHTML = "<p>Could not retrieve image.</p>";
+  }
   document.querySelector(".flight_data").style.display = "block";
 };
 
-export { handleFormSubmission };
+// Attach the handleFormSubmission function to the form's submit event
+travelForm.addEventListener("submit", handleFormSubmission);
+
+export default { handleFormSubmission };

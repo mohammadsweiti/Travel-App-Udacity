@@ -14,4 +14,3 @@ $breakpoints: (
     @error "Invalid breakpoint name: #{$breakpoint}. Available breakpoints: #{map-keys($breakpoints)}.";
   }
 }
-

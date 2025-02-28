@@ -1,0 +1,3 @@
+export const GEO_USERNAME = 'menoo20';
+export const WEATHER_API_KEY = 'f30edf494a814d6bad7b15354c8111e2';
+export const PIXABAY_API_KEY = '24559697-9027e06b209242a7359757c40';

@@ -1,4 +1,4 @@
-@import "./breakPoints";
+@import "../style/breakPoints.scss";
 
 * {
   box-sizing: border-box;
@@ -9,7 +9,7 @@ body {
   background-image: url("../images/images.jpeg");
   background-repeat: no-repeat;
   background-size: cover;
-  font-family: "REM", sans-serif;a
+  font-family: "REM", sans-serif;
 
   .container {
     min-height: 100vh;
@@ -20,7 +20,7 @@ body {
 
       .site-title {
         font-size: 23px;
-        @include respond-to("sm"){
+        @include respond-to("sm") {
           font-size: 50px;
         }
         margin: 0;
@@ -34,12 +34,12 @@ body {
       @include respond-to("lg") {
         width: 50%;
       }
-      #city_error{
+      #city_error {
         display: none;
       }
-      #date_error{
+      #date_error {
         display: none;
       }
-    }
-  }
-}
+    } 
+  }  
+}  
