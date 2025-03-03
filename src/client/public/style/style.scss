@@ -1,8 +1,4 @@
-@import "../style/breakPoints.scss";
-
-* {
-  box-sizing: border-box;
-}
+@import "../style/breakpoints";
 
 body {
   background-attachment: fixed;
@@ -11,35 +7,107 @@ body {
   background-size: cover;
   font-family: "REM", sans-serif;
 
-  .container {
+  .wrapper {
     min-height: 100vh;
-    .site-header {
-      background-color: hwb(0 20% 80%);
-      color: whitesmoke;
-      padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 3rem;
+  }
 
-      .site-title {
-        font-size: 23px;
-        @include respond-to("sm") {
-          font-size: 50px;
-        }
-        margin: 0;
-        text-align: center;
-        text-transform: uppercase;
-      }
+  .app-header {
+    background-color: hwb(0 20% 80%);
+    color: whitesmoke;
+    padding: 15px;
+    width: 100%;
+  }
+
+  .app-title {
+    font-size: 23px;
+    @include respond-to("sm") {
+      font-size: 50px;
+    }
+    margin: 0;
+    text-align: center;
+    text-transform: uppercase;
+    font-family: "Roboto", serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    font-style: normal;
+    font-variation-settings: "wdth" 100;
+  }
+
+  .input_section {
+    margin-top: 5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .form-control {
+    font-size: 1.1rem;
+  }
+
+  .input-group {
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
+
+  .input-group-text {
+    background-color: #f1f1f1;
+  }
+
+  #destination_error, #departure_error {
+    display: none;
+    font-size: 0.9rem;
+    color: #f44336;
+  }
+
+  .travelInfo {
+    display: none;
+    margin-top: 2rem;
+    .locationName, .temperature, .high-temp, .low-temp, .weatherStatus {
+      font-size: 1.2rem;
+      margin-top: 1rem;
     }
 
-    #form_row {
-      width: 90%;
-      @include respond-to("lg") {
-        width: 50%;
-      }
-      #city_error {
-        display: none;
-      }
-      #date_error {
-        display: none;
-      }
-    } 
-  }  
-}  
+    .destinationImage {
+      width: 100%;
+      height: auto;
+      margin-top: 1rem;
+    }
+  }
+
+  .btn {
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+
+    &:hover {
+      background-color: #0056b3;
+    }
+  }
+
+  .col {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+  }
+
+  #form_row {
+    width: 90%;
+    @include respond-to("lg") {
+      width: 50%;
+    }
+  }
+}

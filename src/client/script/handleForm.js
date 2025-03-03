@@ -1,168 +1,141 @@
 import axios from "axios";
 
-const travelForm = document.querySelector("form");
-const destinationInput = document.getElementById("city");
-const departureDateInput = document.getElementById("flightDate");
-const SERVER_BASE = window.location.origin;
-const destinationError = document.getElementById("city_error");
-const dateValidationError = document.getElementById("date_error");
+const travelDataForm = document.querySelector("form");
+const locationInput = document.getElementById("destination");
+const dateInput = document.getElementById("departureDate");
+const BASE_URL = window.location.origin;
+const locationErrorMsg = document.getElementById("destination_error");
+const dateErrorMsg = document.getElementById("departure_error");
 
-const handleFormSubmission = async (event) => {
-  event.preventDefault();
-
-  console.log("Form submission initiated");
-
-  if (!validateFormInputs()) {
-    return;
-  }
-
-  try {
-    const locationInfo = await fetchCityLocation();
-
-    if (locationInfo && locationInfo.error) {
-      displayError(destinationError, locationInfo.message);
-      return;
-    }
-
-    if (locationInfo && !locationInfo.error) {
-      const { longitude, latitude, cityName } = locationInfo;
-      const travelDate = departureDateInput.value;
-
-      if (!travelDate) {
-        console.log("Travel date is required");
-        displayError(dateValidationError, "Please provide the travel date");
-        return;
-      }
-
-      const daysUntilDeparture = calculateDaysRemaining(travelDate);
-
-      const weatherForecast = await retrieveWeatherInfo(longitude, latitude, daysUntilDeparture);
-
-      if (weatherForecast && weatherForecast.error) {
-        displayError(dateValidationError, weatherForecast.message);
-        return;
-      }
-
-      const cityImage = await fetchCityImage(cityName);
-      updateTravelDetails(daysUntilDeparture, cityName, cityImage, weatherForecast);
-    }
-  } catch (error) {
-    console.error("An error occurred:", error);
-    displayError(destinationError, "An unexpected error occurred. Please try again later.");
-  }
-};
-
-const validateFormInputs = () => {
-  hideErrors();
-
-  if (!destinationInput.value) {
-    displayError(destinationError, "Destination city is required");
+const validateInputs = () => {
+  resetErrors();
+  
+  if (!locationInput.value) {
+    showError(locationErrorMsg, "Destination is required");
     return false;
   }
 
-  if (!departureDateInput.value) {
-    displayError(dateValidationError, "Departure date is required");
+  if (!dateInput.value) {
+    showError(dateErrorMsg, "Please enter a departure date");
     return false;
   }
 
-  if (calculateDaysRemaining(departureDateInput.value) < 0) {
-    displayError(dateValidationError, "Departure date cannot be in the past");
+  if (getDaysRemaining(dateInput.value) < 0) {
+    showError(dateErrorMsg, "Departure date cannot be in the past");
     return false;
   }
 
   return true;
 };
 
-const hideErrors = () => {
-  destinationError.style.display = "none";
-  dateValidationError.style.display = "none";
+const resetErrors = () => {
+  locationErrorMsg.style.display = "none";
+  dateErrorMsg.style.display = "none";
 };
 
-const displayError = (element, message) => {
+const showError = (element, message) => {
   element.innerHTML = `<i class="bi bi-exclamation-circle-fill me-2"></i>${message}`;
   element.style.display = "block";
 };
 
-const fetchCityLocation = async () => {
-  const city = destinationInput.value;
-  if (city) {
+const getDaysRemaining = (date) => {
+  const currentDate = new Date();
+  const targetDate = new Date(date);
+  const diffTime = targetDate.getTime() - currentDate.getTime();
+  return Math.ceil(diffTime / (1000 * 3600 * 24));
+};
+
+const getLocationData = async () => {
+  const location = locationInput.value;
+  if (location) {
     try {
-      const response = await axios.post(`${SERVER_BASE}/getCity`, { city }, {
-        headers: {
-          "Content-Type": "application/json",
-        },
+      const response = await axios.post(`${BASE_URL}/fetchLocation`, { location }, {
+        headers: { "Content-Type": "application/json" },
       });
       return response.data;
     } catch (error) {
-      console.error("Error fetching city location:", error);
-      return { error: true, message: "Error fetching city location." };
+      return { error: true, message: "Error retrieving location data." };
     }
-  } else {
-    displayError(destinationError, "Destination cannot be empty");
-    return { error: true };
   }
+  showError(locationErrorMsg, "Destination cannot be empty");
+  return { error: true };
 };
 
-const retrieveWeatherInfo = async (lng, lat, remainingDays) => {
+const fetchWeather = async (lng, lat, remainingDays) => {
   try {
-    const response = await axios.post(`${SERVER_BASE}/getWeather`, {
-      lng,
-      lat,
-      remainingDays,
-    });
+    const response = await axios.post(`${BASE_URL}/fetchWeather`, { lng, lat, remainingDays });
     return response.data;
   } catch (error) {
-    console.error("Error fetching weather data:", error);
-    return { error: true, message: "Error fetching weather data." };
+    return { error: true, message: "Error retrieving weather information." };
   }
 };
 
-const calculateDaysRemaining = (date) => {
-  const today = new Date();
-  const endDate = new Date(date);
-  const timeDifference = endDate.getTime() - today.getTime();
-  const dayDifference = Math.ceil(timeDifference / (1000 * 3600 * 24));
-  return dayDifference;
-};
-
-const fetchCityImage = async (cityName) => {
+const getCityImage = async (cityName) => {
   try {
-    const response = await axios.post(`${SERVER_BASE}/getCityPic`, {
-      city_name: cityName,
-    });
-    const { image } = response.data;
-    return image;
+    const response = await axios.post(`${BASE_URL}/fetchImage`, { city_name: cityName });
+    return response.data.image;
   } catch (error) {
-    console.error("Error fetching city image:", error);
     return null;
   }
 };
 
-const updateTravelDetails = (daysRemaining, city, image, weather) => {
-  document.getElementById("Rdays").textContent = `Your trip starts in ${daysRemaining} days from now`;
-  document.querySelector(".cityName").textContent = `Location: ${city}`;
-  document.querySelector(".weather").textContent =
-    daysRemaining > 7
-      ? `Weather forecast: ${weather.description}`
-      : `Current weather: ${weather.description}`;
+const updateUI = (remainingDays, location, image, weather) => {
+  document.getElementById("remaining_days").textContent = `Trip starts in ${remainingDays} days`;
+  document.querySelector(".locationName").textContent = `Destination: ${location}`;
+  document.querySelector(".weatherStatus").textContent =
+    remainingDays > 7 ? `Expected weather: ${weather.description}` : `Current weather: ${weather.description}`;
 
-  document.querySelector(".temp").textContent =
-    daysRemaining > 7
-      ? `Forecasted temperature: ${weather.temp}&degC`
-      : `Current temperature: ${weather.temp} &degC`;
+  document.querySelector(".temperature").textContent =
+    remainingDays > 7 ? `Expected Temp: ${weather.temp}°C` : `Current Temp: ${weather.temp}°C`;
 
-  document.querySelector(".max-temp").textContent = daysRemaining > 7 ? `Max Temp: ${weather.app_max_temp}&degC` : "";
-  document.querySelector(".min-temp").textContent = daysRemaining > 7 ? `Min Temp: ${weather.app_min_temp}&degC` : "";
+  document.querySelector(".high-temp").textContent = remainingDays > 7 ? `Max Temp: ${weather.app_max_temp}°C` : "";
+  document.querySelector(".low-temp").textContent = remainingDays > 7 ? `Min Temp: ${weather.app_min_temp}°C` : "";
 
-  if (image) {
-    document.querySelector(".cityPic").innerHTML = `<img src="${image}" alt="Image of ${city}">`;
-  } else {
-    document.querySelector(".cityPic").innerHTML = "<p>Could not retrieve image.</p>";
-  }
-  document.querySelector(".flight_data").style.display = "block";
+  document.querySelector(".destinationImage").innerHTML = image
+    ? `<img src="${image}" alt="View of ${location}">`
+    : "<p>Image not available.</p>";
+
+  document.querySelector(".travelInfo").style.display = "block";
 };
 
-// Attach the handleFormSubmission function to the form's submit event
-travelForm.addEventListener("submit", handleFormSubmission);
+const handleSubmission = async (event) => {
+  event.preventDefault();
 
-export default { handleFormSubmission };
+  if (!validateInputs()) return;
+
+  try {
+    const locationData = await getLocationData();
+
+    if (locationData.error) {
+      showError(locationErrorMsg, locationData.message);
+      return;
+    }
+
+    const { longitude, latitude, cityName } = locationData;
+    const travelDate = dateInput.value;
+
+    if (!travelDate) {
+      showError(dateErrorMsg, "Departure date is required");
+      return;
+    }
+
+    const daysRemaining = getDaysRemaining(travelDate);
+    const weatherData = await fetchWeather(longitude, latitude, daysRemaining);
+
+    if (weatherData.error) {
+      showError(dateErrorMsg, weatherData.message);
+      return;
+    }
+
+    const cityPicture = await getCityImage(cityName);
+    updateUI(daysRemaining, cityName, cityPicture, weatherData);
+  } catch (error) {
+    showError(locationErrorMsg, "Unexpected error occurred. Try again later.");
+  }
+};
+
+
+
+travelDataForm.addEventListener("submit", handleSubmission);
+export default { handleSubmission };
+
